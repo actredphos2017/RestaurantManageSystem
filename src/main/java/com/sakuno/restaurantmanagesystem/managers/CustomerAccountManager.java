@@ -16,19 +16,6 @@ import java.util.Arrays;
 
 public class CustomerAccountManager {
 
-    private static CustomerAccountManager singleItem = null;
-
-    private CustomerAccountManager() {
-    }
-
-    public static CustomerAccountManager getInstance() {
-        if (singleItem == null)
-            synchronized (CustomerAccountManager.class) {
-                singleItem = new CustomerAccountManager();
-            }
-        return singleItem;
-    }
-
     private OutputStream failReason = new ByteArrayOutputStream();
 
     private PrintStream errorOs = new PrintStream(failReason);

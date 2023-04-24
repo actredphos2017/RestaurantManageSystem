@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${title}">Title</title>
-    <link rel="stylesheet" th:href="@{index.css}">
 </head>
 <body>
-<h1 class="blueText">Hello World!</h1>
+<img th:src="${headPic}">
+<h1>Hello World!</h1>
+<div th:text="${msg}"></div>
 </body>
 </html>

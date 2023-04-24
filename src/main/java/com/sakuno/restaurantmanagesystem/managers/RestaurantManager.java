@@ -1,6 +1,7 @@
 package com.sakuno.restaurantmanagesystem.managers;
 
 import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantFullData;
+import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantLoginInfo;
 import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantRegisterInfo;
 import com.sakuno.restaurantmanagesystem.utils.DatabaseEntrance;
 import com.sakuno.restaurantmanagesystem.utils.StateBuilder;
@@ -11,18 +12,6 @@ import java.io.PrintStream;
 import java.sql.SQLException;
 
 public class RestaurantManager {
-    private static RestaurantManager singleItem = null;
-
-    private RestaurantManager() {
-    }
-
-    public static RestaurantManager getInstance() {
-        if (singleItem == null)
-            synchronized (CustomerAccountManager.class) {
-                singleItem = new RestaurantManager();
-            }
-        return singleItem;
-    }
 
     private OutputStream failReason = new ByteArrayOutputStream();
 
@@ -87,9 +76,7 @@ public class RestaurantManager {
                         info.getCommit())
                 .build();
 
-        if (!db.runStatement(
-                prepareState
-        )) {
+        if (!db.runStatement(prepareState)) {
             errorOs.println("存在输入超限的参数！" + prepareState);
             return false;
         } else return true;
@@ -132,5 +119,83 @@ public class RestaurantManager {
             errorOs.println("查询错误");
             return null;
         }
+    }
+
+    public String getHeadPic(String id) {
+        var db = DatabaseEntrance.getInstance();
+        if (!db.isAvailable()) {
+            errorOs.println("数据库不可用");
+            return null;
+        }
+
+        var queryResult = db.runStatementWithQuery(
+                StateBuilder.Companion
+                        .select()
+                        .from("Restaurants")
+                        .forColumns("HeadPic")
+                        .withCondition("ID", id)
+                        .build()
+        );
+
+        if (queryResult == null) {
+            errorOs.println("查询失败！");
+            errorOs.println(db.popFailReason());
+            return null;
+        } else try {
+            if(queryResult.next()) {
+                return queryResult.getString(1);
+            } else {
+                errorOs.println("目标 ID 不存在");
+                return null;
+            }
+        } catch (SQLException ignore) {
+            errorOs.println("查询失败！");
+            return null;
+        }
+    }
+
+    public RestaurantFullData login(RestaurantLoginInfo info) {
+        var db = DatabaseEntrance.getInstance();
+        if (!db.isAvailable()) {
+            errorOs.println("数据库不可用");
+            return null;
+        }
+
+        var queryResult = db.runStatementWithQuery(
+                StateBuilder.Companion
+                        .select()
+                        .from("Restaurants")
+                        .forColumns("ID", "Name", "Address", "Phone", "HeadPic", "Commit")
+                        .withCondition("ID", info.getUsername())
+                        .withCondition("ManagePassword", info.getPassword())
+                        .build()
+        );
+
+        RestaurantFullData res;
+
+        if (queryResult == null) {
+            errorOs.println("查询失败！");
+            errorOs.println(db.popFailReason());
+            return null;
+        } else try {
+            if (queryResult.next()) {
+                res = new RestaurantFullData(
+                        queryResult.getString(3),
+                        queryResult.getString(6),
+                        queryResult.getString(5),
+                        queryResult.getString(1),
+                        queryResult.getString(2),
+                        queryResult.getString(4)
+                );
+                return res;
+            } else {
+                errorOs.println("账号不存在或密码错误！");
+                return null;
+            }
+        } catch (SQLException ignore) {
+            errorOs.println("查询失败！");
+            return null;
+        }
+
     }
 }
