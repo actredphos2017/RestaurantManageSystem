@@ -5,12 +5,37 @@
     <title>登录到管理员</title>
     <link th:href="@{css/bootstrap.min.css}" rel="stylesheet"/>
     <link href="../static/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <style th:inline="text">
+        .backgroundImage {
+            background-image: url("[[@{/}]]img/background.png");
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-size: cover;
+            position: fixed;
+            filter: blur(5px);
+        }
+        .backgroundImageBlur {
+            background-image: url("[[@{/}]]img/background.png");
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-size: cover;
+            position: fixed;
+            filter: blur(16px);
+        }
+    </style>
 </head>
 <body>
 
+<div class="backgroundImage"></div>
+
+<div class="backgroundImageBlur"></div>
+
 <div th:text="${failedReason}"></div>
 
-<div class="container text-center d-flex justify-content-center align-items-center">
+<div class="container text-center d-flex justify-content-center align-items-center shadow">
     <div style="position: absolute; top: 50%; transform: translate(0, -50%);">
         <form action="/login" method="post" onsubmit="return validateForm();">
             <div class="card mb-3 my-4" style="max-width: 700px;">
