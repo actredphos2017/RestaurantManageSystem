@@ -7,17 +7,24 @@ import com.sakuno.restaurantmanagesystem.managers.RestaurantManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 @SpringBootApplication
 @Controller
 public class RegisterController {
+
+    @Autowired
+    RestaurantManager manager;
 
     @GetMapping("/register")
     public String doGet() {
@@ -40,12 +47,13 @@ public class RegisterController {
                 request.getParameter("phone")
         );
 
-        var manager = new RestaurantManager();
+        OutputStream failReason = new ByteArrayOutputStream();
+        PrintStream errorOs = new PrintStream(failReason);
 
-        if (manager.register(registerInfo))
+        if (manager.register(registerInfo, errorOs))
             return "redirect:hello";
         else {
-            model.addAttribute("failedReason", manager.popFailReason());
+            model.addAttribute("failedReason", failReason.toString());
             return "register";
         }
     }

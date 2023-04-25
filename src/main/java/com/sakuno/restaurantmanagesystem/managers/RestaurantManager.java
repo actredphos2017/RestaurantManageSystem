@@ -3,29 +3,22 @@ package com.sakuno.restaurantmanagesystem.managers;
 import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantFullData;
 import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantLoginInfo;
 import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantRegisterInfo;
-import com.sakuno.restaurantmanagesystem.utils.DatabaseEntrance;
+import com.sakuno.restaurantmanagesystem.utils.DatabaseRepository;
 import com.sakuno.restaurantmanagesystem.utils.StateBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.SQLException;
 
+@Service
 public class RestaurantManager {
 
-    private OutputStream failReason = new ByteArrayOutputStream();
+    @Autowired
+    private DatabaseRepository repository;
 
-    private PrintStream errorOs = new PrintStream(failReason);
 
-    public String popFailReason() {
-        var result = failReason.toString();
-        errorOs.close();
-        failReason = new ByteArrayOutputStream();
-        errorOs = new PrintStream(failReason);
-        return result;
-    }
-
-    public boolean register(RestaurantRegisterInfo info) {
+    public boolean register(RestaurantRegisterInfo info, PrintStream errorOs) {
         if (!info.check()) {
             errorOs.println("内容填写不完整！");
             return false;
@@ -33,23 +26,22 @@ public class RestaurantManager {
 
         var id = info.getId();
 
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用");
             return false;
         }
 
-        var queryResult = db.runStatementWithQuery(
+        var queryResult = repository.runStatementWithQuery(
                 StateBuilder.Companion
                         .select()
                         .from("Restaurants")
                         .withCondition("ID", id)
-                        .build()
+                        .build(),
+                errorOs
         );
 
         if (queryResult == null) {
             errorOs.println("查询错误");
-            errorOs.println(db.popFailReason());
             return false;
         }
 
@@ -76,30 +68,30 @@ public class RestaurantManager {
                         info.getCommit())
                 .build();
 
-        if (!db.runStatement(prepareState)) {
+        if (!repository.runStatement(prepareState, errorOs)) {
             errorOs.println("存在输入超限的参数！" + prepareState);
             return false;
         } else return true;
     }
 
-    public RestaurantFullData checkAuthCode(String authCode) {
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+    public RestaurantFullData checkAuthCode(String authCode, PrintStream errorOs) {
+
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用");
             return null;
         }
 
-        var result = db.runStatementWithQuery(
+        var result = repository.runStatementWithQuery(
                 StateBuilder.Companion
                         .select()
                         .from("Restaurants")
                         .forColumns("ID", "Name", "Address", "Phone", "HeadPic", "Commit")
                         .withCondition("AuthCode", authCode)
-                        .build()
+                        .build(),
+                errorOs
         );
 
         if (result == null) {
-            errorOs.println(db.popFailReason());
             return null;
         } else try {
             if (result.next()) {
@@ -121,28 +113,27 @@ public class RestaurantManager {
         }
     }
 
-    public String getHeadPic(String id) {
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+    public String getHeadPic(String id, PrintStream errorOs) {
+
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用");
             return null;
         }
 
-        var queryResult = db.runStatementWithQuery(
+        var queryResult = repository.runStatementWithQuery(
                 StateBuilder.Companion
                         .select()
                         .from("Restaurants")
                         .forColumns("HeadPic")
                         .withCondition("ID", id)
-                        .build()
+                        .build(),
+                errorOs
         );
 
         if (queryResult == null) {
-            errorOs.println("查询失败！");
-            errorOs.println(db.popFailReason());
             return null;
         } else try {
-            if(queryResult.next()) {
+            if (queryResult.next()) {
                 return queryResult.getString(1);
             } else {
                 errorOs.println("目标 ID 不存在");
@@ -154,28 +145,26 @@ public class RestaurantManager {
         }
     }
 
-    public RestaurantFullData login(RestaurantLoginInfo info) {
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+    public RestaurantFullData login(RestaurantLoginInfo info, PrintStream errorOs) {
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用");
             return null;
         }
 
-        var queryResult = db.runStatementWithQuery(
+        var queryResult = repository.runStatementWithQuery(
                 StateBuilder.Companion
                         .select()
                         .from("Restaurants")
                         .forColumns("ID", "Name", "Address", "Phone", "HeadPic", "Commit")
                         .withCondition("ID", info.getUsername())
                         .withCondition("ManagePassword", info.getPassword())
-                        .build()
+                        .build(),
+                errorOs
         );
 
         RestaurantFullData res;
 
         if (queryResult == null) {
-            errorOs.println("查询失败！");
-            errorOs.println(db.popFailReason());
             return null;
         } else try {
             if (queryResult.next()) {

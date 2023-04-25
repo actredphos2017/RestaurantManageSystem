@@ -4,31 +4,24 @@ import com.sakuno.restaurantmanagesystem.json.customer.CustomerFullInfo;
 import com.sakuno.restaurantmanagesystem.json.customer.CustomerLoginInfo;
 import com.sakuno.restaurantmanagesystem.json.customer.CustomerRegisterInfo;
 import com.sakuno.restaurantmanagesystem.utils.DatabaseEntrance;
+import com.sakuno.restaurantmanagesystem.utils.DatabaseRepository;
 import com.sakuno.restaurantmanagesystem.utils.StateBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.Arrays;
 
+@Service
 public class CustomerAccountManager {
 
-    private OutputStream failReason = new ByteArrayOutputStream();
+    @Autowired
+    private DatabaseRepository repository;
 
-    private PrintStream errorOs = new PrintStream(failReason);
-
-    public String popFailReason() {
-        var result = failReason.toString();
-        errorOs.close();
-        failReason = new ByteArrayOutputStream();
-        errorOs = new PrintStream(failReason);
-        return result;
-    }
-
-    public boolean register(CustomerRegisterInfo info) {
+    public boolean register(CustomerRegisterInfo info, PrintStream errorOs) {
 
         var username = info.getUsername();
         var password = info.getPassword();
@@ -42,8 +35,7 @@ public class CustomerAccountManager {
 
         var id = (phone + username + System.currentTimeMillis()).hashCode();
 
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用 2001");
             return false;
         }
@@ -55,10 +47,10 @@ public class CustomerAccountManager {
                 .withItems(id, username, password, phone)
                 .build();
 
-        return db.runStatement(prepareState);
+        return repository.runStatement(prepareState, errorOs);
     }
 
-    public String login(CustomerLoginInfo info) {
+    public String login(CustomerLoginInfo info, PrintStream errorOs) {
 
         var account = info.getAccount();
         var password = info.getPassword();
@@ -72,8 +64,7 @@ public class CustomerAccountManager {
             return null;
         }
 
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用 2004");
             return null;
         }
@@ -85,7 +76,7 @@ public class CustomerAccountManager {
                 .withCondition("Password", password)
                 .build();
 
-        var result = db.runStatementWithQuery(prepareState);
+        var result = repository.runStatementWithQuery(prepareState, errorOs);
         if (result == null) {
             errorOs.println("数据库查询错误 2005");
             return null;
@@ -101,12 +92,13 @@ public class CustomerAccountManager {
                     errorOs.println("加密出错 2002");
                     return null;
                 }
-                if (db.runStatement(StateBuilder.Companion
+                if (repository.runStatement(StateBuilder.Companion
                         .update()
                         .fromTable("CustomerAccounts")
                         .withCondition(accountType, account)
                         .change("SessionAuthCode", prepareAuthCode)
-                        .build()
+                        .build(),
+                        errorOs
                 )) return prepareAuthCode;
                 else {
                     errorOs.println("认证码更新失败 2006");
@@ -120,20 +112,21 @@ public class CustomerAccountManager {
         return null;
     }
 
-    public CustomerFullInfo checkAuth(String authCode) {
-        var db = DatabaseEntrance.getInstance();
-        if (!db.isAvailable()) {
+    public CustomerFullInfo checkAuth(String authCode, PrintStream errorOs) {
+
+        if (!repository.isAvailable()) {
             errorOs.println("数据库不可用 2008");
             return null;
         }
 
-        var result = db.runStatementWithQuery(
+        var result = repository.runStatementWithQuery(
                 StateBuilder.Companion
                         .select()
                         .from("CustomerAccounts")
                         .forColumns("ID", "Username", "Phone")
                         .withCondition("SessionAuthCode", authCode)
-                        .build()
+                        .build(),
+                errorOs
         );
         try {
             if (result.next()) {

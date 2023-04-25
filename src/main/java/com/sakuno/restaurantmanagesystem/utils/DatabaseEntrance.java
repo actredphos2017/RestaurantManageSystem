@@ -1,55 +1,57 @@
 package com.sakuno.restaurantmanagesystem.utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
+
 import java.io.PrintStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
-public class DatabaseEntrance {
+@Component
+@PropertySource("classpath:application.properties")
+public class DatabaseEntrance implements DatabaseRepository {
 
-    private static DatabaseEntrance singleItem = null;
+    @Value("${com.sakuno.databaseEntrance.driver}")
+    private String databaseDriver;
 
-    public static DatabaseEntrance getInstance() {
-        if (singleItem == null)
-            synchronized (DatabaseEntrance.class) {
-                singleItem = new DatabaseEntrance();
-            }
-        return singleItem;
-    }
+    @Value("${com.sakuno.databaseEntrance.url}")
+    private String databaseUrl;
 
-    public static boolean init(String driver, String url, String username, String password, String databaseName) {
-        var it = getInstance();
-        it.initialized = true;
+    @Value("${com.sakuno.databaseEntrance.username}")
+    private String databaseUsername;
 
-        try {
-            Class.forName(driver);
-            it.connection = DriverManager.getConnection(url, username, password);
-        } catch (Exception e) {
-            e.printStackTrace(it.errorOs);
-            return false;
-        }
-        it.databaseName = databaseName;
-        it.available = true;
-        return true;
-    }
+    @Value("${com.sakuno.databaseEntrance.password}")
+    private String databasePassword;
+
+    @Value("${com.sakuno.databaseEntrance.name}")
+    private String databaseName;
 
     private Connection connection;
+
     private Statement statement = null;
 
     private boolean initialized = false;
+
     private boolean available = false;
 
-    private OutputStream failReason = new ByteArrayOutputStream();
-
-    private PrintStream errorOs = new PrintStream(failReason);
-
-    public String popFailReason() {
-        var result = "数据库:" + failReason.toString();
-        errorOs.close();
-        failReason = new ByteArrayOutputStream();
-        errorOs = new PrintStream(failReason);
-        return result;
+    @PostConstruct
+    public boolean init() {
+        initialized = true;
+        try {
+            Class.forName(databaseDriver);
+            connection = DriverManager.getConnection(databaseUrl, databaseUsername, databasePassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        available = true;
+        return true;
     }
+
 
     public boolean isAvailable() {
         return available;
@@ -59,12 +61,7 @@ public class DatabaseEntrance {
         return initialized;
     }
 
-    private String databaseName;
-
-    private DatabaseEntrance() {
-    }
-
-    private boolean createStatement() {
+    private boolean createStatement(PrintStream errorOs) {
         try {
             statement = connection.createStatement();
             if (statement == null)
@@ -82,13 +79,13 @@ public class DatabaseEntrance {
         return false;
     }
 
-    public boolean runStatement(String state) {
+    public boolean runStatement(String state, PrintStream errorOs) {
         if (!available) {
             errorOs.println("数据库当前不可用！请联系系统管理员！ ErrorCode: 1002");
             return false;
         }
 
-        if (createStatement())
+        if (createStatement(errorOs))
             return false;
 
         try {
@@ -101,13 +98,13 @@ public class DatabaseEntrance {
         return true;
     }
 
-    public ResultSet runStatementWithQuery(String state) {
+    public ResultSet runStatementWithQuery(String state, PrintStream errorOs) {
         if (!available) {
             errorOs.println("数据库当前不可用！请联系系统管理员！ ErrorCode: 1004");
             return null;
         }
 
-        if (createStatement())
+        if (createStatement(errorOs))
             return null;
 
         ResultSet resultSet = null;
