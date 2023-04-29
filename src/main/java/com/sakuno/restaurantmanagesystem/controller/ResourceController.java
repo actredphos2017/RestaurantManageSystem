@@ -1,6 +1,6 @@
 package com.sakuno.restaurantmanagesystem.controller;
 
-import com.sakuno.restaurantmanagesystem.managers.RestaurantManager;
+import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;

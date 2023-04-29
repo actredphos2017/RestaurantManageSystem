@@ -1,11 +1,15 @@
-package com.sakuno.restaurantmanagesystem.json.restaurant
+package com.sakuno.restaurantmanagesystem.dataclasses.customer
 
 
 import com.google.gson.annotations.SerializedName
 
-data class RestaurantLoginInfo(
+data class CustomerRegisterInfo(
     @SerializedName("password")
     val password: String,
+    @SerializedName("phone")
+    val phone: String?,
     @SerializedName("username")
     val username: String
-)
+) {
+
+}

@@ -1,9 +1,8 @@
-package com.sakuno.restaurantmanagesystem.managers;
+package com.sakuno.restaurantmanagesystem.manager;
 
-import com.sakuno.restaurantmanagesystem.json.customer.CustomerFullInfo;
-import com.sakuno.restaurantmanagesystem.json.customer.CustomerLoginInfo;
-import com.sakuno.restaurantmanagesystem.json.customer.CustomerRegisterInfo;
-import com.sakuno.restaurantmanagesystem.utils.DatabaseEntrance;
+import com.sakuno.restaurantmanagesystem.dataclasses.customer.CustomerFullInfo;
+import com.sakuno.restaurantmanagesystem.dataclasses.customer.CustomerLoginInfo;
+import com.sakuno.restaurantmanagesystem.dataclasses.customer.CustomerRegisterInfo;
 import com.sakuno.restaurantmanagesystem.utils.DatabaseRepository;
 import com.sakuno.restaurantmanagesystem.utils.StateBuilder;
 import org.springframework.beans.factory.annotation.Autowired;

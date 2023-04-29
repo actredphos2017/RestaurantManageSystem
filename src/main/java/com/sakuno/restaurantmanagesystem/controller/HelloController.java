@@ -2,7 +2,7 @@ package com.sakuno.restaurantmanagesystem.controller;
 
 
 import com.google.gson.Gson;
-import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantFullData;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantFullData;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;

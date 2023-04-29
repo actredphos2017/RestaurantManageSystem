@@ -1,11 +1,8 @@
 package com.sakuno.restaurantmanagesystem.controller;
 
-import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantLoginInfo;
-import com.sakuno.restaurantmanagesystem.managers.RestaurantManager;
-import com.sakuno.restaurantmanagesystem.utils.DatabaseRepository;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantLoginInfo;
+import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
@@ -31,7 +28,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String doPost(RedirectAttributes redirectAttributes, HttpServletRequest request, Model model) {
+    public String doPost(HttpServletRequest request, Model model) {
 
         RestaurantLoginInfo info = new RestaurantLoginInfo(
                 request.getParameter("password"),
@@ -47,8 +44,8 @@ public class LoginController {
             model.addAttribute("failedReason", failReason.toString());
             return "login";
         } else {
-            redirectAttributes.addFlashAttribute("loginAccount", loginRes);
-            return "redirect:hello";
+            request.getSession().setAttribute("loginAccount", loginRes);
+            return "redirect:panel_main";
         }
     }
 }

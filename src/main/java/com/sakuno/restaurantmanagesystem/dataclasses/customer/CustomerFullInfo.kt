@@ -1,4 +1,4 @@
-package com.sakuno.restaurantmanagesystem.json.customer
+package com.sakuno.restaurantmanagesystem.dataclasses.customer
 
 
 import com.google.gson.annotations.SerializedName

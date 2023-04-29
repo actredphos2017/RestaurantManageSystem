@@ -39,17 +39,16 @@ public class DatabaseEntrance implements DatabaseRepository {
     private boolean available = false;
 
     @PostConstruct
-    public boolean init() {
+    public void init() {
         initialized = true;
         try {
             Class.forName(databaseDriver);
             connection = DriverManager.getConnection(databaseUrl, databaseUsername, databasePassword);
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return;
         }
         available = true;
-        return true;
     }
 
 

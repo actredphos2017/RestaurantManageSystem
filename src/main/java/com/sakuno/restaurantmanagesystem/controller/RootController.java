@@ -1,7 +1,7 @@
 package com.sakuno.restaurantmanagesystem.controller;
 
-import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantFullData;
-import com.sakuno.restaurantmanagesystem.managers.RestaurantManager;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantFullData;
+import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

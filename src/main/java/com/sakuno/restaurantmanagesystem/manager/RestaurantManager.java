@@ -1,15 +1,21 @@
-package com.sakuno.restaurantmanagesystem.managers;
+package com.sakuno.restaurantmanagesystem.manager;
 
-import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantFullData;
-import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantLoginInfo;
-import com.sakuno.restaurantmanagesystem.json.restaurant.RestaurantRegisterInfo;
+import com.google.gson.Gson;
+import com.sakuno.restaurantmanagesystem.dataclasses.menu.MenuInfo;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantFullData;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantLoginInfo;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantRegisterInfo;
 import com.sakuno.restaurantmanagesystem.utils.DatabaseRepository;
 import com.sakuno.restaurantmanagesystem.utils.StateBuilder;
+import jakarta.servlet.http.Part;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 @Service
 public class RestaurantManager {
@@ -17,19 +23,16 @@ public class RestaurantManager {
     @Autowired
     private DatabaseRepository repository;
 
+    @Autowired
+    private FileManager fileManager;
 
-    public boolean register(RestaurantRegisterInfo info, PrintStream errorOs) {
+    public RestaurantFullData register(RestaurantRegisterInfo info, Part headPic, MenuInfo defaultMenu, PrintStream errorOs) throws IOException {
         if (!info.check()) {
             errorOs.println("内容填写不完整！");
-            return false;
+            return null;
         }
 
         var id = info.getId();
-
-        if (!repository.isAvailable()) {
-            errorOs.println("数据库不可用");
-            return false;
-        }
 
         var queryResult = repository.runStatementWithQuery(
                 StateBuilder.Companion
@@ -40,15 +43,13 @@ public class RestaurantManager {
                 errorOs
         );
 
-        if (queryResult == null) {
-            errorOs.println("查询错误");
-            return false;
-        }
+        if (queryResult == null)
+            return null;
 
         try {
             if (queryResult.next()) {
                 errorOs.println("相同ID的餐厅已存在");
-                return false;
+                return null;
             }
         } catch (SQLException e) {
             errorOs.println("数据库错误");
@@ -64,14 +65,18 @@ public class RestaurantManager {
                         info.getName(),
                         info.getAddress(),
                         info.getPhone(),
-                        info.getHeadPic(),
+                        Objects.requireNonNullElse(info.getHeadPic(), ""),
                         info.getCommit())
                 .build();
 
         if (!repository.runStatement(prepareState, errorOs)) {
             errorOs.println("存在输入超限的参数！" + prepareState);
-            return false;
-        } else return true;
+            return null;
+        } else {
+            if (headPic != null) putHeadPic(id, headPic, errorOs);
+            if (defaultMenu != null) setMenu(id, defaultMenu, errorOs);
+            return login(new RestaurantLoginInfo(info.getManagePassword(), id), errorOs);
+        }
     }
 
     public RestaurantFullData checkAuthCode(String authCode, PrintStream errorOs) {
@@ -145,6 +150,64 @@ public class RestaurantManager {
         }
     }
 
+    public Boolean existID(String id, PrintStream errorOs) {
+        if (!repository.isAvailable()) {
+            errorOs.println("数据库不可用");
+            return null;
+        }
+
+        var queryResult = repository.runStatementWithQuery(
+                StateBuilder.Companion
+                        .select()
+                        .from("Restaurants")
+                        .withCondition("ID", id)
+                        .build(),
+                errorOs
+        );
+
+        if (queryResult == null) {
+            errorOs.println("查询错误");
+            return null;
+        }
+
+        try {
+            return queryResult.next();
+        } catch (SQLException e) {
+            errorOs.println("数据库错误");
+            return null;
+        }
+    }
+
+    public boolean putHeadPic(String id, Part filePart, PrintStream errorOs) {
+        String filePath;
+        try {
+            filePath = fileManager.saveUploadedFile(filePart, id, "headPic");
+        } catch (IOException ignore) {
+            errorOs.println("上传失败");
+            return false;
+        }
+
+        try {
+            if (!repository.isAvailable())
+                throw new Exception();
+            if (!repository.runStatement(
+                    StateBuilder.Companion
+                            .update()
+                            .fromTable("Restaurants")
+                            .withCondition("ID", id)
+                            .change("HeadPic", filePath)
+                            .build(),
+                    errorOs
+            )) throw new Exception();
+            return true;
+        } catch (Exception ignore) {
+            errorOs.println("数据库更新错误！");
+            if (!fileManager.removeUploadedFile(filePath, errorOs))
+                errorOs.println("文件删除失败！严重错误！");
+            return false;
+        }
+    }
+
     public RestaurantFullData login(RestaurantLoginInfo info, PrintStream errorOs) {
         if (!repository.isAvailable()) {
             errorOs.println("数据库不可用");
@@ -186,5 +249,49 @@ public class RestaurantManager {
             return null;
         }
 
+    }
+
+    public MenuInfo getMenu(String restaurantID, PrintStream errorOs) {
+        if (!repository.isAvailable()) {
+            errorOs.println("数据库不可用！");
+            return null;
+        }
+
+        ResultSet resultSet = repository.runStatementWithQuery(
+                StateBuilder.Companion
+                        .select()
+                        .from("Restaurants")
+                        .withCondition("ID", restaurantID)
+                        .forColumns("Menu")
+                        .build(),
+                errorOs
+        );
+
+        if (resultSet == null) {
+            errorOs.println("查询失败！");
+            return null;
+        } else try {
+            if (!resultSet.next()) {
+                errorOs.println("目标餐厅不存在！");
+                return null;
+            } else {
+                return new Gson().fromJson(resultSet.getString(1), MenuInfo.class);
+            }
+        } catch (Exception ignore) {
+            errorOs.println("查询失败！");
+            return null;
+        }
+    }
+
+    public boolean setMenu(String restaurantID, MenuInfo info, PrintStream errorOs) {
+        return repository.runStatement(
+                StateBuilder.Companion
+                        .update()
+                        .fromTable("Restaurants")
+                        .withCondition("ID", restaurantID)
+                        .change("Menu", new Gson().toJson(info))
+                        .build(),
+                errorOs
+        );
     }
 }

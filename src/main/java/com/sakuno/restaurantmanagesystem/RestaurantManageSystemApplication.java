@@ -1,6 +1,5 @@
 package com.sakuno.restaurantmanagesystem;
 
-import com.sakuno.restaurantmanagesystem.utils.DatabaseEntrance;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
