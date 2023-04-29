@@ -18,18 +18,6 @@ create table Restaurants
 ) engine = InnoDB,
   charset = utf8;
 
-create table ManagerAccounts
-(
-    Username     varchar(16) not null,
-    Password     varchar(32) not null,
-    RestaurantID varchar(16) not null,
-    Phone        varchar(16) not null,
-    Power        int         not null,
-    primary key (RestaurantID, Username),
-    foreign key (RestaurantID) references Restaurants (ID)
-) engine = InnoDB,
-  charset = utf8;
-
 create table CustomerAccounts
 (
     ID              varchar(16) not null,
