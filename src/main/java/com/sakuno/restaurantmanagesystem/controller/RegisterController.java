@@ -13,13 +13,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 
 @SpringBootApplication
 @Controller
@@ -50,12 +48,7 @@ public class RegisterController {
                 request.getParameter("phone")
         );
 
-        MenuInfo defaultMenu = new MenuInfo(true, new ArrayList<>());
-        defaultMenu.createCategory("甜点", new ArrayList<>());
-        defaultMenu.createCategory("主食", new ArrayList<>());
-        defaultMenu.createCategory("饮料", new ArrayList<>());
-
-        var registerResult = manager.register(registerInfo, filePart, defaultMenu, errorOs);
+        var registerResult = manager.register(registerInfo, filePart, MenuInfo.Companion.getExample(), errorOs);
 
         if (registerResult != null) {
             request.getSession().setAttribute("loginAccount", registerResult);
@@ -64,13 +57,5 @@ public class RegisterController {
             model.addAttribute("failedReason", failReason.toString());
             return "register";
         }
-    }
-
-    private void test(String id, PrintStream errorOs) {
-        MenuInfo info = new MenuInfo(true, new ArrayList<>());
-        info.createCategory("甜点", new ArrayList<>());
-        info.createCategory("主食", new ArrayList<>());
-        info.createCategory("饮料", new ArrayList<>());
-        manager.setMenu(id, info, errorOs);
     }
 }

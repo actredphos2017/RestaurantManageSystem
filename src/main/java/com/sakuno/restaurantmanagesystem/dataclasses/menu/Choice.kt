@@ -4,7 +4,7 @@ package com.sakuno.restaurantmanagesystem.dataclasses.menu
 import com.google.gson.annotations.SerializedName
 
 data class Choice(
-    @SerializedName("price_difference")
+    @SerializedName("pd")
     var priceDifference: Double,
     @SerializedName("value")
     var value: String,

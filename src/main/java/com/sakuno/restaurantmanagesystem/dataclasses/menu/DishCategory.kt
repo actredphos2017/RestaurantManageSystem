@@ -4,7 +4,7 @@ package com.sakuno.restaurantmanagesystem.dataclasses.menu
 import com.google.gson.annotations.SerializedName
 
 data class DishCategory(
-    @SerializedName("category_name")
+    @SerializedName("name")
     var categoryName: String,
     @SerializedName("dishes")
     var dishes: ArrayList<Dish>
@@ -13,20 +13,17 @@ data class DishCategory(
     fun addDish(
         basePrice: Double,
         commit: String,
-        diyOption: ArrayList<ChoiceList>,
+        diyOption: ArrayList<ChoiceList> = arrayListOf(),
         name: String,
         picUrl: String
-    ) {
-        dishes.add(
-            Dish(
-                basePrice = basePrice,
-                commit = commit,
-                diyOption = diyOption,
-                name = name,
-                picUrl = picUrl
-            )
-        )
-    }
+    ): Dish = Dish(
+        basePrice = basePrice,
+        commit = commit,
+        diyOption = diyOption,
+        name = name,
+        picUrl = picUrl
+    ).also { dishes.add(it) }
+
 
     fun removeDish(name: String): Boolean =
         dishes.removeIf { it.name == name }

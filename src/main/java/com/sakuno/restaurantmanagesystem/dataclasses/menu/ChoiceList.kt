@@ -5,15 +5,15 @@ import com.google.gson.annotations.SerializedName
 data class ChoiceList(
     @SerializedName("name")
     var name: String,
-    @SerializedName("single_choice")
+    @SerializedName("sc")
     var singleChoice: Boolean,
     @SerializedName("values")
     var values: ArrayList<Choice>
 ) {
     fun addChoice(
-        priceDifference: Double,
         value: String,
-        commit: String
+        priceDifference: Double = 0.0,
+        commit: String = ""
     ): Boolean =
         if (values.indexOfFirst { it.value == value } >= 0)
             false
