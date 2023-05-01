@@ -2,6 +2,8 @@ package com.sakuno.restaurantmanagesystem.dataclasses.menu
 
 
 import com.google.gson.annotations.SerializedName
+import com.sakuno.restaurantmanagesystem.manager.PictureManager
+import org.springframework.beans.factory.annotation.Autowired
 
 data class Dish(
     @SerializedName("bp")
@@ -15,8 +17,10 @@ data class Dish(
     @SerializedName("pic")
     var picUrl: String
 ) {
+
     fun addDiyOption(name: String, singleChoice: Boolean, values: ArrayList<Choice> = arrayListOf()): ChoiceList =
         ChoiceList(name, singleChoice, values).also { diyOption.add(it) }
+
 
 
     fun removeDiyOption(name: String) = diyOption.removeIf { it.name == name }

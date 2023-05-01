@@ -1,4 +1,4 @@
-package com.sakuno.restaurantmanagesystem.controller;
+package com.sakuno.restaurantmanagesystem.controllers.views;
 
 import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantLoginInfo;
 import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;

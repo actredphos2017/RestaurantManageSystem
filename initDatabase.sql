@@ -11,9 +11,9 @@ create table Restaurants
     Phone          varchar(16) not null,
     HeadPic        text        not null,
     Commit         text        not null,
-    AuthCode       varchar(16) default null,
-    UpdateFlag     boolean     default true,
-    Menu           longtext    default null,
+    AuthCode       text     default null,
+    UpdateFlag     boolean  default true,
+    Menu           longtext default null,
     primary key (ID)
 ) engine = InnoDB,
   charset = utf8;

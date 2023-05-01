@@ -34,4 +34,18 @@ data class DishCategory(
             dishes.removeAt(index)
             true
         }
+
+    fun getDish(index: Int): Dish? = dishes.getOrNull(index)
+
+    fun reinsertDish(index: Int, toIndex: Int): Boolean {
+        val size = dishes.size
+        return if (index !in 0 until size || toIndex !in 0 until size) false
+        else if (index == toIndex) true
+        else {
+            val item = dishes[index]
+            dishes.removeAt(index)
+            dishes.add(toIndex, item)
+            true
+        }
+    }
 }

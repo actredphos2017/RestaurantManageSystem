@@ -1,4 +1,4 @@
-package com.sakuno.restaurantmanagesystem.controller;
+package com.sakuno.restaurantmanagesystem.controllers.views;
 
 import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
 import org.springframework.beans.factory.annotation.Autowired;

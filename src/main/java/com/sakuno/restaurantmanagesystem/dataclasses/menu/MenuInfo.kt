@@ -1,7 +1,9 @@
 package com.sakuno.restaurantmanagesystem.dataclasses.menu
 
 
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import java.io.PrintStream
 
 data class MenuInfo(
     @SerializedName("available")
@@ -42,6 +44,12 @@ data class MenuInfo(
         }
     }
 
+    fun getCategory(index: Int): DishCategory? = categories.getOrNull(index)
+
+    fun getCategory(name: String): DishCategory? = categories.find { it.categoryName == name }
+
+    fun getJson() = Gson().toJson(this)!!
+
     companion object {
         val example = MenuInfo(true).apply {
 
@@ -51,7 +59,7 @@ data class MenuInfo(
                     name = "西红柿炒鸡蛋",
                     basePrice = 22.0,
                     commit = "以新鲜的西红柿和鸡蛋为主要材料，加上适量的盐和糖，炒出来的菜肴酸甜可口，营养丰富，可搭配多种主食享用。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/西红柿炒鸡蛋.jpg"
                 ).apply {
                     addDiyOption(
                         name = "加料",
@@ -82,7 +90,7 @@ data class MenuInfo(
                     name = "红烧肉",
                     basePrice = 38.0,
                     commit = "选用优质的五花肉，佐以适量的酱油、糖和料酒，炖制至入味，香味扑鼻，肉质酥烂，是一道深受人们喜爱的传统美食。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/红烧肉.jpg"
                 ).apply {
                     addDiyOption(
                         name = "加辣",
@@ -120,7 +128,7 @@ data class MenuInfo(
                     name = "宫保鸡丁",
                     basePrice = 28.0,
                     commit = "选用新鲜的鸡胸肉和花生米，佐以香辣的宫保酱汁，烹制出来的菜肴口感鲜美，味道香辣可口。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/宫保鸡丁.jpg"
                 ).apply {
                     addDiyOption(
                         name = "辣度",
@@ -163,7 +171,7 @@ data class MenuInfo(
                     name = "清蒸鲈鱼",
                     basePrice = 38.0,
                     commit = "鲈鱼肉质细嫩，味道鲜美，清蒸后搭配鲜美的调味汁，香气扑鼻，口感鲜美。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/清蒸鲈鱼.jpg"
                 ).apply {
                     addDiyOption(
                         name = "配菜",
@@ -203,7 +211,7 @@ data class MenuInfo(
                     name = "青椒炒肉丝",
                     basePrice = 26.0,
                     commit = "选用新鲜猪肉和青椒，搭配多种调料炒制而成，肉丝鲜嫩多汁，青椒口感清脆爽口，香气扑鼻，是一道下饭的好菜。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/青椒炒肉丝.jpg"
                 ).apply {
                     addDiyOption(
                         name = "加料",
@@ -244,7 +252,7 @@ data class MenuInfo(
                     name = "糖醋里脊",
                     basePrice = 32.0,
                     commit = "选用猪肉里脊，先用淀粉水抓匀，再油炸至金黄色，最后佐以糖、醋等调料，制成酸甜可口的糖醋里脊。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/糖醋里脊.jpg"
                 ).apply {
                     addDiyOption(
                         name = "加菜",
@@ -283,7 +291,7 @@ data class MenuInfo(
                     name = "经典意面",
                     basePrice = 38.0,
                     commit = "意面配上经典的意大利红酱，香气扑鼻，美味可口。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/经典意面.jpg"
                 ).apply {
                     addDiyOption(
                         name = "面条类型",
@@ -328,7 +336,7 @@ data class MenuInfo(
                     name = "白米饭",
                     basePrice = 3.0,
                     commit = "香喷喷的白米饭，口感软糯，是搭配各种菜品的最佳主食选择。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/白米饭.jpg"
                 ).apply {
                     addDiyOption(
                         name = "米种",
@@ -365,7 +373,7 @@ data class MenuInfo(
                     name = "提拉米苏",
                     basePrice = 35.0,
                     commit = "来自意大利的经典甜点，以手指饼干、马斯卡彭芝士和咖啡为主要原料，口感丰富浓郁，甜而不腻，是下午茶和晚餐甜点的不二之选。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/提拉米苏.jpg"
                 ).apply {
                     addDiyOption(
                         name = "大小",
@@ -397,7 +405,7 @@ data class MenuInfo(
                     name = "杏仁豆腐",
                     basePrice = 12.0,
                     commit = "杏仁豆腐是一道以杏仁、鲜奶和糖为主要材料的冷甜点，口感细腻，香甜可口，又不会太腻，非常适合夏天食用。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/杏仁豆腐.jpg"
                 ).apply {
                     addDiyOption(
                         name = "口味",
@@ -430,7 +438,7 @@ data class MenuInfo(
                     name = "芝麻糊",
                     basePrice = 12.0,
                     commit = "芝麻糊是一款浓郁香甜的甜点，采用优质芝麻磨制而成，口感香滑细腻，不但营养丰富，还能滋补身体。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/芝麻糊.jpg"
                 ).apply {
                     addDiyOption(
                         name = "甜度",
@@ -467,7 +475,7 @@ data class MenuInfo(
                     name = "水果沙拉",
                     basePrice = 28.0,
                     commit = "将新鲜的水果切成适当的大小，搭配新鲜的薄荷叶和柠檬汁，清新爽口，是夏天的必选甜点。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/水果沙拉.jpg"
                 ).apply {
                     addDiyOption(
                         name = "选择水果",
@@ -509,7 +517,7 @@ data class MenuInfo(
                     name = "玉米羹",
                     basePrice = 18.0,
                     commit = "将鲜嫩的玉米粒熬煮成浓浓的羹汤，口感清香绵滑，适合各个年龄层的食客品尝。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/玉米羹.jpg"
                 ).apply {
                     addDiyOption(
                         name = "加料",
@@ -548,7 +556,7 @@ data class MenuInfo(
                     name = "南瓜汤羹",
                     basePrice = 26.0,
                     commit = "选用新鲜的南瓜为主料，加上少许鸡蛋、盐、胡椒粉等调味料制成，口感绵密，香气四溢。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/南瓜汤羹.jpg"
                 ).apply {
                     addDiyOption(
                         name = "加料",
@@ -589,7 +597,7 @@ data class MenuInfo(
                     name = "奶茶",
                     basePrice = 18.0,
                     commit = "选用优质奶粉和茶叶，加入适量糖浆和珍珠，口感浓郁丰富，是经典的台式饮品。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/奶茶.jpg"
                 ).apply {
                     addDiyOption(
                         name = "茶底",
@@ -645,7 +653,7 @@ data class MenuInfo(
                     name = "可乐",
                     basePrice = 2.5,
                     commit = "以高质量的原料酿制而成，口感独特，留香回味。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/可乐.jpg"
                 ).apply {
                     addDiyOption(
                         name = "包装",
@@ -666,7 +674,7 @@ data class MenuInfo(
                     name = "雪碧",
                     basePrice = 2.5,
                     commit = "以天然柠檬味和清凉气泡为主要特点，适合各个年龄段的消费者。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/雪碧.jpg"
                 ).apply {
                     addDiyOption(
                         name = "包装",
@@ -687,7 +695,7 @@ data class MenuInfo(
                     name = "芬达",
                     basePrice = 2.5,
                     commit = "以多种水果口味为主要特点，清新可口，口感醇厚。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/芬达.jpg"
                 ).apply {
                     addDiyOption(
                         name = "包装",
@@ -708,7 +716,7 @@ data class MenuInfo(
                     name = "王老吉",
                     basePrice = 3.0,
                     commit = "由多种中药材和天然植物精华熬制而成，口感清爽，带有微甜，有助于清热解毒、生津止渴。",
-                    picUrl = ""
+                    picUrl = "EXAMPLE/王老吉.jpg"
                 )
             }
 

@@ -1,4 +1,4 @@
-package com.sakuno.restaurantmanagesystem.controller;
+package com.sakuno.restaurantmanagesystem.controllers.views;
 
 import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantFullData;
 import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
@@ -7,33 +7,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 @Controller
-public class PanelMenuController {
+public class PanelMainController {
 
     @Autowired
     RestaurantManager manager;
-    @GetMapping("/panel_menu")
+
+    @GetMapping("/panel_main")
     public String doGet(HttpServletRequest request, Model model) {
+
         RestaurantFullData account = (RestaurantFullData) request.getSession().getAttribute("loginAccount");
-        model.addAttribute("title", account.getName() + " 菜单管理");
-        model.addAttribute("restaurantName", account.getName());
-        var failedReason = new ByteArrayOutputStream();
-        var errorOs = new PrintStream(failedReason);
+        if (account == null) return "error";
 
-
-        model.addAttribute("menu", manager.getMenu(account.getId(), errorOs));
-        return "panel_menu";
+        model.addAttribute("account", account);
+        System.out.println(account.getName());
+        return "panel_main";
     }
 
-    @PostMapping("/panel_menu")
+    @PostMapping("/panel_main")
     public String doPost() {
-        return "hello";
+        return "error";
     }
 
 

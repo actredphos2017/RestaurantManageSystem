@@ -1,4 +1,4 @@
-package com.sakuno.restaurantmanagesystem.controller;
+package com.sakuno.restaurantmanagesystem.controllers.views;
 
 
 import com.sakuno.restaurantmanagesystem.dataclasses.menu.MenuInfo;
