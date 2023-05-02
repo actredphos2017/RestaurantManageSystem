@@ -11,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Part;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -33,12 +34,13 @@ public class SetDishPicController {
     MenuRequestHolder holder;
 
     @PostMapping("/rest/upload_dish_pic")
-    public String onPost(MultipartHttpServletRequest request) throws ServletException, IOException {
+    public String onPost(@RequestParam("dish_name") String dishName, MultipartHttpServletRequest request) throws ServletException, IOException {
         Part filePart = request.getPart("picture");
         String targetDish = request.getHeader("target_dish");
         String restaurantID = request.getHeader("id");
         String authCode = request.getHeader("auth_code");
-        String dishName = request.getHeader("dish_name");
+
+        System.out.println();
 
         ByteArrayOutputStream failedReason = new ByteArrayOutputStream();
         PrintStream errorOs = new PrintStream(failedReason);
@@ -56,8 +58,10 @@ public class SetDishPicController {
             return TaskResponse.Companion.failed("找不到目标菜品").toJson();
 
         String oldPicUrl = dish.getPicUrl();
-        if (!oldPicUrl.startsWith("EXAMPLE/")) if (!pictureManager.removeUploadedFile(oldPicUrl, errorOs))
-            return TaskResponse.Companion.failed("原图片删除失败").toJson();
+        if (oldPicUrl != null)
+            if (!(oldPicUrl.startsWith("EXAMPLE/") || oldPicUrl.isEmpty()))
+                if (!pictureManager.removeUploadedFile(oldPicUrl, errorOs))
+                    return TaskResponse.Companion.failed("原图片删除失败").toJson();
 
         dish.setPicUrl(pictureManager.saveUploadedPicture(filePart, restaurantID, "Dishes", dishName));
 

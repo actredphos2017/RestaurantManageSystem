@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 @RestController
@@ -32,11 +34,22 @@ public class EditMenuController {
         String authCode = request.getHeader("auth_code");
         String id = request.getHeader("id");
         String taskName = request.getHeader("task_name");
-        String data = request.getHeader("data");
+
+        String body = null;
+
+        try {
+            BufferedReader bodyReader = request.getReader();
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = bodyReader.readLine()) != null) builder.append(line);
+            body = builder.toString();
+        } catch (Exception ignore) {
+        }
+
 
         ByteArrayOutputStream failedReason = new ByteArrayOutputStream();
         PrintStream errorOs = new PrintStream(failedReason);
 
-        return new TaskResponse(requestHolder.holder(taskName, id, authCode, data, errorOs), failedReason.toString()).toJson();
+        return new TaskResponse(requestHolder.holder(taskName, id, authCode, body == null ? "" : body, errorOs), failedReason.toString()).toJson();
     }
 }

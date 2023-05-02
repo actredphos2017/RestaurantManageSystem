@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,9 +46,11 @@ public class PictureManager {
         }
 
         public String getFullPath() {
-            if (folderPath.endsWith("/"))
-                return folderPath + fileName;
-            else return folderPath + "/" + fileName;
+            return folderPath + (folderPath.endsWith("/") ? "" : "/") + fileName + ".jpg";
+        }
+
+        public String getUrl() {
+            return "/resource/" + folderPath + (folderPath.endsWith("/") ? "" : "/") + fileName;
         }
 
         public FilePathInfo(String folderPath, String fileName) {
@@ -55,8 +59,8 @@ public class PictureManager {
             else
                 this.folderPath = folderPath;
 
-            if (fileName.endsWith(".jpg")) this.fileName = fileName;
-            else this.fileName = fileName + ".jpg";
+            if (fileName.endsWith(".jpg")) this.fileName = fileName.substring(0, fileName.length() - 4);
+            else this.fileName = fileName;
         }
     }
 
@@ -72,25 +76,34 @@ public class PictureManager {
 
         FilePathInfo filePathInfo = assignPath(restaurantID, category, prefix);
 
-        Path path = Paths.get(filePathInfo.getFolderPath());
+        Path path = Paths.get(folderPath + filePathInfo.getFolderPath());
         if (!Files.exists(path)) Files.createDirectories(path);
 
-        File outputFile = new File(filePathInfo.getFullPath());
+        File outputFile = new File(folderPath + filePathInfo.getFullPath());
+        System.out.println(filePathInfo.getFullPath());
 
         ImageIO.write(bufferedImage, "jpg", outputFile);
 
-        return filePathInfo.getFullPath();
+        return filePathInfo.getUrl();
     }
 
-    public String getFullPath(String relativePath) {
-        if(relativePath.startsWith("/"))
-            return folderPath + relativePath.substring(1);
-        else
-            return folderPath + relativePath;
+    public String getFullPath(String url) {
+        return folderPath + url.substring(10) + ".jpg";
     }
 
-    public boolean removeUploadedFile(String path, PrintStream errorOs) {
-        File target = new File(getFullPath(path));
+    public boolean removeUploadedFile(String url, PrintStream errorOs) {
+
+        if (url == null)
+            return true;
+
+        if (url.isEmpty())
+            return true;
+
+        String targetFilePath = getFullPath(url);
+        if (targetFilePath.startsWith(folderPath + "EXAMPLE/"))
+            return true;
+
+        File target = new File(getFullPath(url));
 
         if (!target.exists()) {
             errorOs.println("目标文件不存在！");

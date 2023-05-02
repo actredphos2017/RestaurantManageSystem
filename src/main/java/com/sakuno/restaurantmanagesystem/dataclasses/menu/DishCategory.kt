@@ -28,12 +28,7 @@ data class DishCategory(
     fun removeDish(name: String): Boolean =
         dishes.removeIf { it.name == name }
 
-    fun removeDish(index: Int): Boolean =
-        if (index !in 0 until dishes.size) false
-        else {
-            dishes.removeAt(index)
-            true
-        }
+    fun removeDish(index: Int) = dishes.removeAt(index)
 
     fun getDish(index: Int): Dish? = dishes.getOrNull(index)
 

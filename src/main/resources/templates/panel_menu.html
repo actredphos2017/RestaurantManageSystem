@@ -31,10 +31,18 @@
     </div>
 </nav>
 
-<div class="container mt-5">
+<div class="container mt-2">
+    <button id="add_new_category_btn" class="btn btn-primary my-2" data-bs-toggle="modal"
+            data-bs-target="#add-category-modal">添加新分类
+    </button>
+
+    <button id="reorder_category_btn" class="btn btn-primary my-2" data-bs-toggle="modal"
+            data-bs-target="#reorder-category-modal">编辑分类顺序
+    </button>
+
     <div class="accordion" id="menuAccordion">
         <div th:each="it, index : ${menu.categories}">
-            <div class="accordion-item">
+            <div class="accordion-item my-2">
                 <h2 class="accordion-header" th:id="'heading' + ${index.index}">
                     <button class="accordion-button collapsed" th:id="'accordion-btn' + ${index.index}" type="button"
                             data-bs-toggle="collapse"
@@ -44,14 +52,25 @@
                 </h2>
                 <div th:id="category + ${index.index}" class="accordion-collapse collapse"
                      th:attr="aria-labelledby='heading' + ${index.index}">
-                    <button class="btn btn-primary add-dish-btn m-2" th:attr="category-index=${index.index}"
+                    <button class="btn btn-primary add-dish-btn mt-3 ms-3" th:attr="category-index=${index.index}"
                             data-bs-toggle="modal" data-bs-target="#add-dish-modal">添加菜品
                     </button>
-                    <div class="dishes-list" th:each="it2, index2 : ${it.getDishes()}">
+
+                    <button class="btn btn-primary edit-category-btn mt-3"
+                            th:attr="category-index=${index.index}, category-name=${it.getCategoryName()}"
+                            data-bs-toggle="modal" data-bs-target="#edit-category-modal">编辑分类名称
+                    </button>
+
+                    <button class="btn btn-danger remove-category-btn mt-3"
+                            th:attr="category-index=${index.index}, category-name=${it.getCategoryName()}">删除分类
+                    </button>
+
+                    <div class="dish-item" th:each="it2, index2 : ${it.getDishes()}">
                         <div class="card m-3 shadow">
                             <div class="row g-0">
                                 <div class="col-md-4">
-                                    <img th:src="@{EXAMPLE/西红柿炒鸡蛋.jpg}" class="img-fluid rounded-start" alt="...">
+                                    <img th:src="${pic_urls.get(index.index).get(index2.index)}"
+                                         class="img-fluid rounded-start" alt="...">
                                 </div>
                                 <div class="col-md-8">
                                     <div class="card-body">
@@ -59,8 +78,11 @@
                                         <p class="card-text" th:text="${it2.getCommit()}">Some quick example text to
                                             build on
                                             the card title and make up the bulk of the card's content.</p>
-                                        <a href="#" class="btn btn-primary"
-                                           th:text="'基础价格：' + ${it2.getBasePrice() + '¥'}">价格</a>
+                                        <button class="btn btn-primary edit-dish-btn" data-bs-toggle="modal"
+                                                data-bs-target="#edit-dish-modal"
+                                                th:attr="category-index=${index.index}, dish-index=${index2.index}, dish-info=${it2.toJson()}"
+                                                th:text="'基础价格：' + ${it2.getBasePrice() + '¥'}">编辑菜单
+                                        </button>
                                         <button class="btn btn-primary dish-mv-up-btn"
                                                 th:attr="dish-index=${index.index}+','+${index2.index}">移动到上面
                                         </button>
@@ -83,7 +105,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">添加菜品到分类
+                <h1 class="modal-title fs-5" id="add-dish-head-text">添加菜品到分类
                 </h1>
                 <div class="col-auto ms-1">
                     <select class="form-select" id="dish-category-select" aria-label="选择菜品分类">
@@ -133,13 +155,720 @@
     </div>
 </div>
 
+<div class="modal modal-lg fade" id="edit-dish-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="edit-dish-head-text">编辑菜品
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-primary my-2" id="edit-upload-pic-btn">上传新图片</button>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="edit-dish-name" placeholder="菜品名称">
+                    <label for="dish-name">菜品名称</label>
+                </div>
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="edit-dish-bp" placeholder="基础价格">
+                    <label for="dish-bp">基础价格</label>
+                </div>
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="简单地介绍一下这道菜吧" id="edit-dish-commit"
+                              style="height: 100px"></textarea>
+                    <label for="dish-commit">菜品介绍</label>
+                </div>
+
+                <div class="card my-2">
+                    <div class="card-body">
+                        <div class="card-title">自定义选项</div>
+                        <div id="edit-diy-questions"></div>
+                        <button class="btn btn-primary btn-sm" id="edit-add-diy-btn">添加自定义分类</button>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submit-edit-dish-btn">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-lg fade" id="add-category-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="add-category-head-text">添加分类
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="category-name" placeholder="分类名称">
+                    <label for="dish-name">分类名称</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submit-new-category-btn">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-lg fade" id="edit-category-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="edit-category-head-text">编辑分类名称
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="edit-category-name" placeholder="分类名称">
+                    <label for="dish-name">分类名称</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submit-edit-category-btn">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-lg fade" id="reorder-category-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="reorder-category-head-text">编辑分类显示顺序
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="mx-4 mt-2 text-black-50 small">拖动以下卡片以完成排序</div>
+            <div class="modal-body" id="reorder-category-list">
+                <div th:each="it, index : ${menu.getCategories()}">
+                    <div th:remove="tag">
+                        <div class="card my-1">
+                            <div class="card-body reorder-category-index" th:attr="index=${index.index}"
+                                 th:text="${it.getCategoryName()}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="submit-reorder-category-btn">应用</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="auth_code" th:text="${account.getAuthCode()}" style="display: none;"></div>
 <div id="restaurant_id" th:text="${account.getId()}" style="display: none;"></div>
 
 
-<script th:src="@{js/bootstrap.js}"></script>
-<script th:src="@{js/panel_menu.js}"></script>
+<script th:src="@{js/bootstrap.min.js}"></script>
+<script th:src="@{js/Sortable.min.js}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let panels = JSON.parse(localStorage.getItem("openedCategories"));
+        let collapses = JSON.parse(localStorage.getItem("showingCollapses"));
+        localStorage.removeItem("openedCategories");
+        localStorage.removeItem("showingCollapses");
+
+        if (panels) {
+            panels.forEach((id) => {
+                document.getElementById(id).classList.remove("collapsed");
+            });
+        }
+
+        if (collapses) {
+            collapses.forEach((id) => {
+                document.getElementById(id).classList.add("show");
+            });
+        }
+    });
+
+    function memoryReload() {
+        let panels = document.querySelectorAll(".accordion-button");
+        let collapses = document.querySelectorAll(".accordion-collapse");
+        let openedCategories = [];
+        let showingCollapses = [];
+
+        panels.forEach((item) => {
+            if (!item.classList.contains("collapsed"))
+                openedCategories.push(item.id.toString());
+        });
+
+        collapses.forEach((item) => {
+            if (item.classList.contains("show"))
+                showingCollapses.push(item.id.toString());
+        })
+
+        localStorage.setItem("openedCategories", JSON.stringify(openedCategories));
+        localStorage.setItem("showingCollapses", JSON.stringify(showingCollapses));
+
+        location.reload();
+    }
+
+    function directReload() {
+        location.reload();
+    }
+
+    let singleDIYHTML = (dishDiyNameInput, dishDiyName, isSingleChoiceID, optionAddTargetID, newDiyBtnID, diyRemoveBtnID) => {
+        return `<div class="input-group mb-3 diy-name-input-group">
+                    <span class="input-group-text" id="` + dishDiyNameInput + `">分类名</span>
+                    <input type="text" class="form-control diy-name-input" aria-label="分类名" id="` + dishDiyName + `"
+                           aria-describedby="` + dishDiyNameInput + `" placeholder="做法、加料等">
+                </div>
+                <div class="form-check single-choice-check-group">
+                    <input class="form-check-input single-choice-checkbox" type="checkbox" value="" id="` + isSingleChoiceID + `">
+                    <label class="form-check-label" for="` + isSingleChoiceID + `">
+                        单选分类
+                    </label>
+                </div>
+
+                <div class="diy-option-list" id="` + optionAddTargetID + `"></div>
+
+                <div class="row my-2">
+                    <div class="col-auto">
+                        <button class="btn btn-primary btn-sm" id="` + newDiyBtnID + `">添加选项</button>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-danger btn-sm" id="` + diyRemoveBtnID + `">删除分类</button>
+                    </div>
+                </div>`;
+    }
+
+    let singleOptionHTML = (removeOptionBtnID) => {
+        return `<div class="col-auto option-info">
+                    <div class="input-group">
+                        <span class="input-group-text">选项名</span>
+                        <input type="text" class="form-control diy-option-name" placeholder="中辣、加葱花等"
+                               aria-label="Username">
+                        <span class="input-group-text">价格差</span>
+                        <input type="text" class="form-control diy-option-pd" placeholder="正数为升价，负数为降价"
+                               aria-label="Server">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-danger" id="` + removeOptionBtnID + `">D</button>
+                </div>`
+    };
+
+    let authCode = document.getElementById("auth_code").textContent;
+    let id = document.getElementById("restaurant_id").textContent;
+
+    let addDishTargetCategoryIndex = 1;
+
+    document.querySelectorAll(".add-dish-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+            addDishTargetCategoryIndex = parseInt(button.getAttribute("category-index"));
+            document.getElementById("dish-category-select").value = addDishTargetCategoryIndex;
+        });
+    });
+
+    document.getElementById("submit-new-category-btn").addEventListener("click", () => {
+        fetch("/rest/edit_menu", {
+            method: "POST",
+            headers: {
+                "auth_code": authCode,
+                "id": id,
+                "task_name": "add_category"
+            },
+            body: document.getElementById("category-name").value
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) memoryReload();
+                else throw new Error(res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+        });
+    })
+
+    document.querySelectorAll(".remove-category-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!confirm("你是否真的要删除分类 " + button.getAttribute("category-name") + " 及其中附属的所有菜品？")) return;
+
+            fetch("/rest/edit_menu", {
+                method: "POST",
+                headers: {
+                    "auth_code": authCode,
+                    "id": id,
+                    "task_name": "delete_category",
+                },
+                body: button.getAttribute("category-index")
+            }).then((response) => {
+                if (response.ok) return response.text();
+                else throw new Error("请求失败！");
+            }).then((response) => {
+                if (response == null) throw new Error("请求失败！");
+                else {
+                    let res = JSON.parse(response);
+                    if (res.ok) memoryReload();
+                    else throw new Error(res.reason);
+                }
+            }).catch((error) => {
+                alert(error.message);
+            });
+        });
+    });
+
+    document.querySelectorAll('.del-dish-btn').forEach((button) => {
+        button.addEventListener("click", async function () {
+            if (!confirm("你是否真的要删除菜品 " + button.closest(".card-body").querySelector("h5").textContent + " 吗？")) return;
+
+            let attribute = button.getAttribute("dish-index");
+            fetch("/rest/edit_menu", {
+                method: "POST",
+                headers: {
+                    "auth_code": authCode,
+                    "id": id,
+                    "task_name": "delete_dish"
+                },
+                body: attribute
+            }).then((response) => {
+                if (response.ok) return response.text();
+                else throw new Error("请求失败！");
+            }).then((response) => {
+                if (response == null) throw new Error("请求失败！");
+                else {
+                    let res = JSON.parse(response);
+                    if (res.ok) memoryReload();
+                    else throw new Error(res.reason);
+                }
+            }).catch((error) => {
+                alert(error.message);
+            });
+
+        });
+    });
+
+    document.querySelectorAll('.dish-mv-up-btn').forEach((button) => {
+        button.addEventListener("click", async function () {
+            let attribute = button.getAttribute("dish-index");
+            fetch("/rest/edit_menu", {
+                method: "POST",
+                headers: {
+                    "auth_code": authCode,
+                    "id": id,
+                    "task_name": "move_up_dish"
+                },
+                body: attribute
+            }).then((response) => {
+                if (response.ok) return response.text();
+                else throw new Error("请求失败！");
+            }).then((response) => {
+                if (response == null) throw new Error("请求失败！");
+                else {
+                    let res = JSON.parse(response);
+                    if (res.ok) memoryReload();
+                    else throw new Error(res.reason);
+                }
+            }).catch((error) => {
+                alert(error.message);
+            });
+        });
+    });
+
+    let diyCategoryIndex = 1;
+    let diyOptionIndex = 1;
+
+    let editCategoryIndex = -1;
+    let editDishIndex = -1;
+
+    let editDiyLists = document.getElementById("edit-diy-questions");
+
+    document.querySelectorAll(".edit-dish-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+            let dishInfo = JSON.parse(button.getAttribute("dish-info"));
+            editCategoryIndex = button.getAttribute("category-index");
+            editDishIndex = button.getAttribute("dish-index");
+
+            document.getElementById("edit-dish-name").value = dishInfo.name;
+            document.getElementById("edit-dish-commit").value = dishInfo.commit;
+            document.getElementById("edit-dish-bp").value = dishInfo.bp;
+
+            resetEditDiy();
+
+            let diyList = dishInfo.diy;
+
+            diyList.forEach((diy) => {
+                editAddDiy(diy.name, diy.sc, diy.values);
+            });
+        });
+    });
+
+    document.getElementById("submit-edit-dish-btn").addEventListener("click", () => {
+
+        if (editCategoryIndex === -1 || editDishIndex === -1) {
+            alert("未知错误！");
+            return;
+        }
+
+        let dishName = document.getElementById("edit-dish-name").value;
+
+        let editDish = {
+            "bp": parseFloat(document.getElementById("edit-dish-bp").value),
+            "commit": document.getElementById("edit-dish-commit").value,
+            "name": dishName,
+            "pic": "",
+            "diy": []
+        };
+
+        let diyGroup = editDiyLists.querySelectorAll(".edit-diy-item");
+
+        diyGroup.forEach((item) => {
+            let newDiyItem = {
+                "name": item.querySelector(".diy-name-input-group > .diy-name-input").value,
+                "sc": item.querySelector(".single-choice-checkbox").checked,
+                "values": []
+            };
+
+            let diyOptionGroup = item.querySelectorAll(".option-info");
+
+            diyOptionGroup.forEach((option) => {
+                let newOption = {
+                    "value": option.querySelector(".diy-option-name").value,
+                    "pd": parseFloat(option.querySelector(".diy-option-pd").value),
+                    "commit": ""
+                };
+
+                newDiyItem.values.push(newOption);
+            });
+
+            editDish.diy.push(newDiyItem);
+
+        });
+
+        let data = editCategoryIndex + "," + editDishIndex + "|" + JSON.stringify(editDish);
+
+        fetch("/rest/edit_menu", {
+            method: "POST",
+            headers: {
+                "auth_code": authCode,
+                "id": id,
+                "task_name": "edit_dish"
+            },
+            body: data
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("菜品更新请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("菜品更新请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) memoryReload();
+                else throw new Error("菜品更新请求失败！原因：" + res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+        });
+
+    });
+
+    function resetEditDiy() {
+        editDiyLists.innerHTML = "";
+    }
+
+    function editAddOption(optionAddTargetID, option = null) {
+        let removeOptionBtnID = "edit-diy-option-btn" + diyOptionIndex;
+        let thisOptionID = "edit-diy-option-tag" + diyOptionIndex;
+
+        diyOptionIndex = diyOptionIndex + 1;
+
+        let optionList = document.getElementById(optionAddTargetID);
+
+        let newOption = document.createElement("div");
+        newOption.classList.add("row", "m-3", "edit-diy-option-item");
+        newOption.id = thisOptionID;
+        newOption.innerHTML = singleOptionHTML(removeOptionBtnID);
+
+        if (option) {
+            newOption.querySelector(".diy-option-name").value = option.value;
+            newOption.querySelector(".diy-option-pd").value = option.pd;
+        }
+
+        optionList.appendChild(newOption);
+
+        document.getElementById(removeOptionBtnID).addEventListener("click", function () {
+            document.getElementById(thisOptionID).remove();
+        });
+    }
+
+    function editAddDiy(diyName = null, isSingleChoice = false, optionList = null) {
+        let newDiyBtnID = "edit-diy-class-btn" + diyCategoryIndex;
+        let optionAddTargetID = "edit-diy-class-place" + diyCategoryIndex;
+        let diyRemoveBtnID = "edit-remove-diy-class-btn" + diyCategoryIndex;
+        let dishDiyNameInput = "edit-dish-diy-name-input" + diyCategoryIndex;
+        let dishDiyName = "edit-dish-diy-name" + diyCategoryIndex;
+        let thisDiyID = "edit-diy-class" + diyCategoryIndex;
+        let isASingleChoice = "edit-single-choice" + diyCategoryIndex;
+        diyCategoryIndex = diyCategoryIndex + 1;
+
+        let newChoice = document.createElement("div");
+        newChoice.classList.add("card", "m-2", "p-3", "edit-diy-item");
+        newChoice.id = thisDiyID;
+
+        newChoice.innerHTML = singleDIYHTML(dishDiyNameInput, dishDiyName, isASingleChoice, optionAddTargetID, newDiyBtnID, diyRemoveBtnID);
+
+        editDiyLists.appendChild(newChoice);
+
+        if (diyName) document.getElementById(dishDiyName).value = diyName;
+        document.getElementById(isASingleChoice).checked = isSingleChoice;
+
+        document.getElementById(diyRemoveBtnID).addEventListener("click", () => {
+            document.getElementById(thisDiyID).remove();
+        });
+
+        let newOptionBtn = document.getElementById(newDiyBtnID);
+        newOptionBtn.addEventListener("click", () => {
+            editAddOption(optionAddTargetID);
+        });
+
+        if (optionList) optionList.forEach((option) => {
+            editAddOption(optionAddTargetID, option);
+        });
+
+
+    }
+
+    document.getElementById("edit-add-diy-btn").addEventListener("click", () => {
+        editAddDiy();
+    });
+
+    let diyLists = document.getElementById("diy-questions");
+
+    document.getElementById("add-diy-btn").addEventListener("click", () => {
+
+        let newDiyBtnID = "add-diy-class-btn" + diyCategoryIndex;
+        let optionAddTargetID = "add-diy-class-place" + diyCategoryIndex;
+        let diyRemoveBtnID = "remove-diy-class-btn" + diyCategoryIndex;
+        let dishDiyNameInput = "dish-diy-name-input" + diyCategoryIndex;
+        let dishDiyName = "dish-diy-name" + diyCategoryIndex;
+        let thisDiyID = "diy-class" + diyCategoryIndex;
+        let isASingleChoice = "single-choice" + diyCategoryIndex;
+        diyCategoryIndex = diyCategoryIndex + 1;
+
+        let newChoice = document.createElement("div");
+        newChoice.classList.add("card", "m-2", "p-3", "diy-item");
+        newChoice.id = thisDiyID;
+
+        newChoice.innerHTML = singleDIYHTML(dishDiyNameInput, dishDiyName, isASingleChoice, optionAddTargetID, newDiyBtnID, diyRemoveBtnID);
+
+        diyLists.appendChild(newChoice);
+
+        document.getElementById(diyRemoveBtnID).addEventListener("click", function () {
+            document.getElementById(thisDiyID).remove();
+        });
+
+        let newOptionBtn = document.getElementById(newDiyBtnID);
+        newOptionBtn.addEventListener("click", function () {
+            let removeOptionBtnID = "add-diy-option-btn" + diyOptionIndex;
+            let thisOptionID = "diy-option-tag" + diyOptionIndex;
+
+            diyOptionIndex = diyOptionIndex + 1;
+
+            let optionList = document.getElementById(optionAddTargetID);
+
+            let newOption = document.createElement("div");
+            newOption.classList.add("row", "m-3", "diy-option-item");
+            newOption.id = thisOptionID;
+            newOption.innerHTML = singleOptionHTML(removeOptionBtnID);
+
+            optionList.appendChild(newOption);
+
+            document.getElementById(removeOptionBtnID).addEventListener("click", function () {
+                document.getElementById(thisOptionID).remove();
+            });
+        });
+
+
+    });
+
+    document.getElementById("submit-new-dish-btn").addEventListener("click", () => {
+
+        let dishName = document.getElementById("dish-name").value;
+
+        let newDish = {
+            "bp": parseFloat(document.getElementById("dish-bp").value),
+            "commit": document.getElementById("dish-commit").value,
+            "name": dishName,
+            "pic": "",
+            "diy": []
+        };
+
+        let diyGroup = diyLists.querySelectorAll(".diy-item");
+
+        diyGroup.forEach((item) => {
+            let newDiyItem = {
+                "name": item.querySelector(".diy-name-input").value,
+                "sc": item.querySelector(".single-choice-checkbox").checked,
+                "values": []
+            };
+
+            let diyOptionGroup = item.querySelectorAll(".diy-option-list > .diy-option-item > .option-info");
+
+            diyOptionGroup.forEach(function (option) {
+                let newOption = {
+                    "value": option.querySelector(".diy-option-name").value,
+                    "pd": parseFloat(option.querySelector(".diy-option-pd").value),
+                    "commit": ""
+                };
+
+                newDiyItem.values.push(newOption);
+            });
+
+            newDish.diy.push(newDiyItem);
+
+        });
+
+        let targetCategoryIndex = document.getElementById("dish-category-select").value;
+        let newDishIndex = document.getElementById("category" + targetCategoryIndex).querySelectorAll(".dish-item").length;
+
+        let data = targetCategoryIndex + "|" + JSON.stringify(newDish);
+
+        fetch("/rest/edit_menu", {
+            method: "POST",
+            headers: {
+                "auth_code": authCode,
+                "id": id,
+                "task_name": "add_dish"
+            },
+            body: data
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("菜品上传请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("菜品上传请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) {
+                    let dishPicValue = document.getElementById("dish-pic");
+                    if (dishPicValue.files.length > 0) {
+                        let formData = new FormData();
+                        formData.append("picture", dishPicValue.files[0]);
+                        formData.append("dish_name", dishName);
+                        fetch("/rest/upload_dish_pic", {
+                            method: "POST",
+                            headers: {
+                                "auth_code": authCode,
+                                "id": id,
+                                "target_dish": targetCategoryIndex + "," + newDishIndex
+                            },
+                            body: formData
+                        }).then((response) => {
+                            if (response.ok) return response.text();
+                            else throw new Error("图片上传请求失败！");
+                        }).then((response) => {
+                            if (response == null) throw new Error("图片上传请求失败！");
+                            else {
+                                let res = JSON.parse(response);
+                                if (res.ok) memoryReload();
+                                else throw new Error("图片上传请求失败！原因：" + res.reason);
+                            }
+                        }).catch((error) => {
+                            alert(error.message);
+                        });
+                    }
+                } else throw new Error("菜品上传请求失败！原因：" + res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+        });
+
+    });
+
+    let reorderCategoryList = document.getElementById("reorder-category-list");
+
+    let sortList = new Sortable(reorderCategoryList, {
+        animation: 150,
+        ghostClass: "shadow-lg"
+    });
+
+    let targetCategoryIndex = -1;
+
+    document.getElementById("submit-reorder-category-btn").addEventListener("click", () => {
+
+        let reorderCategoryIndex = {
+            category: []
+        };
+
+        reorderCategoryList.querySelectorAll(".reorder-category-index").forEach((it) => {
+            reorderCategoryIndex.category.push(it.getAttribute("index"));
+        });
+
+        fetch("/rest/edit_menu", {
+            method: "POST",
+            headers: {
+                "auth_code": authCode,
+                "id": id,
+                "task_name": "reorder_category"
+            },
+            body: JSON.stringify(reorderCategoryIndex)
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) directReload();
+                else throw new Error(res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+        });
+
+    });
+
+    document.querySelectorAll(".edit-category-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+            targetCategoryIndex = button.getAttribute("category-index");
+            document.getElementById("edit-category-name").value = button.getAttribute("category-name");
+        });
+    });
+
+    document.getElementById("submit-edit-category-btn").addEventListener("click", () => {
+        fetch("/rest/edit_menu", {
+            method: "POST",
+            headers: {
+                "auth_code": authCode,
+                "id": id,
+                "task_name": "edit_category"
+            },
+            body: targetCategoryIndex + "|" + document.getElementById("edit-category-name").value
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) memoryReload();
+                else throw new Error(res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+        });
+    })
+
+</script>
 
 </body>
 </html>

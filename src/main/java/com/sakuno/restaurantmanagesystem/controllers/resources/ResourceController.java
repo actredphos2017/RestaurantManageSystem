@@ -1,5 +1,6 @@
-package com.sakuno.restaurantmanagesystem.controllers.views;
+package com.sakuno.restaurantmanagesystem.controllers.resources;
 
+import com.sakuno.restaurantmanagesystem.manager.PictureManager;
 import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -16,22 +17,21 @@ import java.io.*;
 @Controller
 public class ResourceController {
 
+
     @Autowired
-    RestaurantManager manager;
+    PictureManager pictureManager;
 
-    @GetMapping("/resource/{restaurantID}/headpic")
-    public ResponseEntity<Resource> getRestaurantHeadPic(@PathVariable String restaurantID) throws FileNotFoundException {
-        OutputStream failReason = new ByteArrayOutputStream();
-        PrintStream errorOs = new PrintStream(failReason);
+    @GetMapping("/resource/{id}/Dishes/{dish_name}")
+    public ResponseEntity<Resource> getPictureRes(@PathVariable String id, @PathVariable String dish_name) throws FileNotFoundException {
 
-        File headPicFile = new File(manager.getHeadPic(restaurantID, errorOs));
+        File pictureFile = new File(pictureManager.getFullPath("/resource/" + id + "/Dishes/" + dish_name));
 
-        if (!headPicFile.exists())
-            throw new FileNotFoundException("File " + headPicFile + " Not Found!");
+        if (!pictureFile.exists())
+            throw new FileNotFoundException("Picture " + dish_name + " Not Found!");
 
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG.toString())
-                .body(new FileSystemResource(headPicFile));
+                .body(new FileSystemResource(pictureFile));
     }
 }

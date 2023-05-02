@@ -6,9 +6,6 @@ import com.sakuno.restaurantmanagesystem.manager.PictureManager;
 import com.sakuno.restaurantmanagesystem.manager.RestaurantManager;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 @Controller
@@ -43,7 +39,7 @@ public class PanelMenuController {
         ArrayList<ArrayList<String>> menuUrls = new ArrayList<>();
         menu.getCategories().forEach((category) -> {
             ArrayList<String> urlList = new ArrayList<>();
-            category.getDishes().forEach((dish -> urlList.add(pictureManager.getFullPath(dish.getPicUrl()))));
+            category.getDishes().forEach((dish -> urlList.add(dish.getPicUrl())));
             menuUrls.add(urlList);
         });
 
