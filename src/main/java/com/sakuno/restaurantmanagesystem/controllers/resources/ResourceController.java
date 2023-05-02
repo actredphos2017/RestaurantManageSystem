@@ -21,6 +21,7 @@ public class ResourceController {
     @Autowired
     PictureManager pictureManager;
 
+    // 图片url转图片
     @GetMapping("/resource/{id}/Dishes/{dish_name}")
     public ResponseEntity<Resource> getPictureRes(@PathVariable String id, @PathVariable String dish_name) throws FileNotFoundException {
 

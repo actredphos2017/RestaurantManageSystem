@@ -11,7 +11,8 @@
 <nav class="navbar navbar-dark bg-dark navbar-expand-md">
     <div class="container-fluid">
         <a class="navbar-brand" th:text="${account.getName()}" href="#">餐厅</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -30,13 +31,70 @@
     </div>
 </nav>
 
-<div>
-
+<div class="container mt-2">
+    <button id="get-seat-qrcode" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#get-seat-qrcode-modal">
+        获取座位码
+    </button>
 </div>
 
+<div class="modal fade" id="get-seat-qrcode-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="add-category-head-text">座位二维码
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body justify-content-center align-items-center">
+                <div class="card shadow-lg m-5">
+                    <img id="qrcode-img" th:src="'/rest/seat_qrcode/' + ${account.getId()} + '/0'" class="card-img-top"
+                         alt="seat_0">
+                    <div class="card-body">
+                        <h5 class="card-title" id="qrcode-name">座位 0</h5>
+                        <p class="card-text">扫一扫，享受美食</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-auto">
+                        <div class="input-group flex-nowrap">
+                            <span class="input-group-text" id="addon-wrapping">@</span>
+                            <input id="seat-name" type="text" class="form-control" placeholder="座位码"
+                                   aria-label="Username" aria-describedby="addon-wrapping">
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" id="generate-qrcode-btn">生成</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div id="restaurant_id" th:text="${account.getId()}" style="display: none;"></div>
 
 <script th:src="@{js/bootstrap.js}"></script>
 <script src="../static/js/bootstrap.js"></script>
+
+<script>
+
+    let restaurantID = document.getElementById("restaurant_id").textContent;
+    let seatName = document.getElementById("seat-name");
+
+    document.getElementById("generate-qrcode-btn").addEventListener("click", () => {
+        if (seatName.value === "") {
+            seatName.classList.add("is-invalid");
+            return;
+        } else seatName.classList.remove("is-invalid");
+
+        document.getElementById("qrcode-img").src = "/rest/seat_qrcode/" + restaurantID + "/" + seatName.value;
+        document.getElementById("qrcode-img").alt = "seat_" + seatName.value;
+        document.getElementById("qrcode-name").textContent = "座位 " + seatName.value;
+    });
+
+</script>
 </body>
 </html>

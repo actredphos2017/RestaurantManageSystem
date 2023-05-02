@@ -166,6 +166,7 @@
             </div>
             <div class="modal-body">
                 <button class="btn btn-primary my-2" id="edit-upload-pic-btn">上传新图片</button>
+                <input type="file" id="edit-upload-pic" style="display: none;">
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="edit-dish-name" placeholder="菜品名称">
                     <label for="dish-name">菜品名称</label>
@@ -209,7 +210,7 @@
             <div class="modal-body">
                 <div class="form-floating mb-3">
                     <input type="text" class="form-control" id="category-name" placeholder="分类名称">
-                    <label for="dish-name">分类名称</label>
+                    <label for="category-name">分类名称</label>
                 </div>
             </div>
             <div class="modal-footer">
@@ -494,12 +495,56 @@
 
     let editDiyLists = document.getElementById("edit-diy-questions");
 
+    let editUploadInput = document.getElementById("edit-upload-pic");
+
+    let editDishName = "";
+
+    document.getElementById("edit-upload-pic-btn").addEventListener("click", () => {
+        editUploadInput.click();
+    });
+
+    editUploadInput.addEventListener("change", () => {
+        if (editUploadInput.files.length > 0) {
+            let file = editUploadInput.files[0];
+            if (file.size >= 10 * 1024 * 1024) {
+                alert("上传的文件大小不能超过10M！");
+                editUploadInput.value = "";
+            } else {
+                let formData = new FormData();
+                formData.append("picture", editUploadInput.files[0]);
+                formData.append("dish_name", editDishName);
+                fetch("/rest/upload_dish_pic", {
+                    method: "POST",
+                    headers: {
+                        "auth_code": authCode,
+                        "id": id,
+                        "target_dish": editCategoryIndex + "," + editDishIndex
+                    },
+                    body: formData
+                }).then((response) => {
+                    if (response.ok) return response.text();
+                    else throw new Error("图片上传请求失败！");
+                }).then((response) => {
+                    if (response == null) throw new Error("图片上传请求失败！");
+                    else {
+                        let res = JSON.parse(response);
+                        if (res.ok) alert("上传成功！刷新页面以应用！");
+                        else throw new Error("图片上传请求失败！原因：" + res.reason);
+                    }
+                }).catch((error) => {
+                    alert(error.message);
+                });
+            }
+        }
+    })
+
     document.querySelectorAll(".edit-dish-btn").forEach((button) => {
         button.addEventListener("click", () => {
             let dishInfo = JSON.parse(button.getAttribute("dish-info"));
             editCategoryIndex = button.getAttribute("category-index");
             editDishIndex = button.getAttribute("dish-index");
 
+            editDishName = dishInfo.name;
             document.getElementById("edit-dish-name").value = dishInfo.name;
             document.getElementById("edit-dish-commit").value = dishInfo.commit;
             document.getElementById("edit-dish-bp").value = dishInfo.bp;
@@ -573,11 +618,12 @@
             if (response == null) throw new Error("菜品更新请求失败！");
             else {
                 let res = JSON.parse(response);
-                if (res.ok) memoryReload();
-                else throw new Error("菜品更新请求失败！原因：" + res.reason);
+                if (res.ok) {
+                    memoryReload();
+                } else throw new Error("菜品更新请求失败！原因：" + res.reason);
             }
         }).catch((error) => {
-            alert(error.message);
+            alert("第一个fetch报错：" + error.message);
         });
 
     });
@@ -866,7 +912,7 @@
         }).catch((error) => {
             alert(error.message);
         });
-    })
+    });
 
 </script>
 
