@@ -1,10 +1,12 @@
 package com.sakuno.restaurantmanagesystem.manager;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.sakuno.restaurantmanagesystem.dataclasses.menu.MenuInfo;
 import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantFullData;
 import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantLoginInfo;
 import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantRegisterInfo;
+import com.sakuno.restaurantmanagesystem.dataclasses.restaurant.RestaurantShowData;
 import com.sakuno.restaurantmanagesystem.utils.AuthCode;
 import com.sakuno.restaurantmanagesystem.utils.DatabaseRepository;
 import com.sakuno.restaurantmanagesystem.utils.StateBuilder;
@@ -91,7 +93,7 @@ public class RestaurantManager {
                 StateBuilder.Companion
                         .select()
                         .from("Restaurants")
-                        .forColumns("ID", "Name", "Address", "Phone", "HeadPic", "Commit")
+                        .forColumns("ID", "Name", "Address", "Phone", "Commit")
                         .withCondition("AuthCode", authCode)
                         .build(),
                 errorOs
@@ -107,7 +109,6 @@ public class RestaurantManager {
                         result.getString(3),
                         result.getString(4),
                         result.getString(5),
-                        result.getString(6),
                         authCode
                 );
             } else {
@@ -162,7 +163,7 @@ public class RestaurantManager {
                 StateBuilder.Companion
                         .select()
                         .from("Restaurants")
-                        .forColumns("ID", "Name", "Address", "Phone", "HeadPic", "Commit")
+                        .forColumns("ID", "Name", "Address", "Phone", "Commit")
                         .withCondition("ID", info.getUsername())
                         .withCondition("ManagePassword", info.getPassword())
                         .build(),
@@ -189,7 +190,6 @@ public class RestaurantManager {
                         queryResult.getString(3),
                         queryResult.getString(4),
                         queryResult.getString(5),
-                        queryResult.getString(6),
                         authCode.code
                 );
                 else {
@@ -234,6 +234,43 @@ public class RestaurantManager {
         }
     }
 
+    public RestaurantShowData getShowData(String restaurantID, PrintStream errorOs) {
+        ResultSet resultSet = repository.runStatementWithQuery(
+                StateBuilder.Companion
+                        .select()
+                        .from("Restaurants")
+                        .withCondition("ID", restaurantID)
+                        .forColumns("Name", "Address", "Phone", "Commit", "Menu")
+                        .build(),
+                errorOs
+        );
+
+        if(resultSet == null) {
+            errorOs.println("查询错误！");
+            return null;
+        } else try {
+
+            if(!resultSet.next()) {
+                errorOs.println("目标ID不存在！");
+                return null;
+            }
+
+            return new RestaurantShowData(
+                    restaurantID,
+                    resultSet.getString(1),
+                    resultSet.getString(2),
+                    resultSet.getString(3),
+                    resultSet.getString(4),
+                    new Gson().fromJson(resultSet.getString(5), MenuInfo.class)
+            );
+        } catch (SQLException ignore) {
+            errorOs.println("查询错误！");
+            return null;
+        } catch (JsonSyntaxException ignore) {
+            errorOs.println("菜单不存在！");
+            return null;
+        }
+    }
 
     private boolean firstPutHeadPic(String id, Part filePart, PrintStream errorOs) {
         String filePath;

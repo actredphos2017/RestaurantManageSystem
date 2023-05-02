@@ -21,6 +21,9 @@ public class ResourceController {
     @Autowired
     PictureManager pictureManager;
 
+    @Autowired
+    RestaurantManager restaurantManager;
+
     // 图片url转图片
     @GetMapping("/resource/{id}/Dishes/{dish_name}")
     public ResponseEntity<Resource> getPictureRes(@PathVariable String id, @PathVariable String dish_name) throws FileNotFoundException {
@@ -29,6 +32,27 @@ public class ResourceController {
 
         if (!pictureFile.exists())
             throw new FileNotFoundException("Picture " + dish_name + " Not Found!");
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG.toString())
+                .body(new FileSystemResource(pictureFile));
+    }
+
+    @GetMapping("/resource/{id}/headpic")
+    public ResponseEntity<Resource> getHeadPictureRes(@PathVariable String id) throws FileNotFoundException {
+
+        ByteArrayOutputStream failedReason = new ByteArrayOutputStream();
+        PrintStream errorOs = new PrintStream(failedReason);
+
+        String picUrl = restaurantManager.getHeadPic(id, errorOs);
+        if (picUrl == null)
+            throw new FileNotFoundException("Restaurant ID " + id + " Not Found!");
+
+        File pictureFile = new File(pictureManager.getFullPath(picUrl));
+
+        if (!pictureFile.exists())
+            throw new FileNotFoundException("Head Picture " + id + " Not Found!");
 
         return ResponseEntity
                 .ok()

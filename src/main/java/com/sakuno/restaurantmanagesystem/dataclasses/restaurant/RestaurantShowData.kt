@@ -1,9 +1,9 @@
 package com.sakuno.restaurantmanagesystem.dataclasses.restaurant
 
-
 import com.google.gson.annotations.SerializedName
+import com.sakuno.restaurantmanagesystem.dataclasses.menu.MenuInfo
 
-data class RestaurantFullData(
+data class RestaurantShowData(
     @SerializedName("id")
     val id: String,
     @SerializedName("name")
@@ -14,6 +14,6 @@ data class RestaurantFullData(
     val phone: String,
     @SerializedName("commit")
     val commit: String,
-    @SerializedName("auth_code")
-    val authCode: String
+    @SerializedName("menu")
+    val menu: MenuInfo
 )
