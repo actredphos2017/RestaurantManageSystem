@@ -31,14 +31,16 @@
     </div>
 </nav>
 
-<div class="container mt-2">
-    <button id="add_new_category_btn" class="btn btn-primary my-2" data-bs-toggle="modal"
-            data-bs-target="#add-category-modal">添加新分类
-    </button>
+<div class="container mt-4">
+    <div>
+        <button id="add_new_category_btn" class="btn btn-primary my-2" data-bs-toggle="modal"
+                data-bs-target="#add-category-modal">添加新分类
+        </button>
 
-    <button id="reorder_category_btn" class="btn btn-primary my-2" data-bs-toggle="modal"
-            data-bs-target="#reorder-category-modal">编辑分类顺序
-    </button>
+        <button id="reorder_category_btn" class="btn btn-primary my-2" data-bs-toggle="modal"
+                data-bs-target="#reorder-category-modal">编辑分类顺序
+        </button>
+    </div>
 
     <div class="accordion" id="menuAccordion">
         <div th:each="it, index : ${menu.categories}">

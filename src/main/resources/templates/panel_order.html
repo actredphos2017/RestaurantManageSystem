@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title th:text="${account.getName()} + '订单管理'"></title>
     <link th:href="@{css/bootstrap.min.css}" rel="stylesheet"/>
-    <link href="../static/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 <body>
 
 <nav class="navbar navbar-dark bg-dark navbar-expand-md">
     <div class="container-fluid">
         <a class="navbar-brand" th:text="${account.getName()}" href="#">餐厅</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -31,8 +31,115 @@
 </nav>
 
 
+<div class="container mt-4">
+    <div>
+        <button class="btn btn-primary">已完成订单</button>
+    </div>
+
+    <div th:each="single_order, index : ${orders}">
+        <div th:remove="tag">
+            <div class="card mt-3 mb-3">
+                <div class="card-body">
+                    <h4 class="card-title" th:text="'桌号：' + ${single_order.getOrderDetail().getSeat()}"/>
+
+                    <div class="mt-4 mb-2" th:each="dish, index : ${single_order.getOrderDetail().getDishes()}">
+                        <h5 class="title" th:text="${dish.getDName()}"/>
+                        <p class="m-2" th:text="${dish.getDiyString()}"/>
+                    </div>
+
+                    <a href="#" onclick="finishOrder(this);" th:attr="order_id=${single_order.getOId()}"
+                       class="card-link">完成订单</a>
+                    <a href="#" onclick="deleteOrder(this);" th:attr="order_id=${single_order.getOId()}"
+                       class="card-link">删除订单</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="restaurant_id" th:text="${account.getId()}" style="display: none;"></div>
 
 <script th:src="@{js/bootstrap.js}"></script>
-<script src="../static/js/bootstrap.js"></script>
+<script type="text/javascript">
+
+    let restaurantID = document.getElementById("restaurant_id").textContent;
+    let keepUpdate = true;
+
+    function updateCheck() {
+        console.log("开始检查！");
+        if (!keepUpdate) return;
+        fetch("/rest/order_update/" + restaurantID).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) {
+                    console.log("检查成功，结果：" + res.result);
+                    if (res.result) location.reload();
+                }
+                else throw new Error("请求失败！");
+            }
+        }).catch((error) => {
+            console.log("页面检查更新失败：" + error.message)
+        });
+    }
+
+    setInterval(updateCheck, 5000);
+
+    function finishOrder(aTag) {
+        keepUpdate = false;
+        let orderID = aTag.getAttribute("order_id");
+        fetch("/rest/edit_order", {
+            method: "POST",
+            headers: {
+                request: "finish",
+                r_id: restaurantID,
+                o_id: orderID
+            }
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) location.reload();
+                else throw new Error(res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+            keepUpdate = true;
+        });
+    }
+
+    function deleteOrder(aTag) {
+        keepUpdate = false;
+        let orderID = aTag.getAttribute("order_id");
+        fetch("/rest/edit_order", {
+            method: "POST",
+            headers: {
+                request: "delete",
+                r_id: restaurantID,
+                o_id: orderID
+            }
+        }).then((response) => {
+            if (response.ok) return response.text();
+            else throw new Error("请求失败！");
+        }).then((response) => {
+            if (response == null) throw new Error("请求失败！");
+            else {
+                let res = JSON.parse(response);
+                if (res.ok) location.reload();
+                else throw new Error(res.reason);
+            }
+        }).catch((error) => {
+            alert(error.message);
+            keepUpdate = true;
+        });
+    }
+
+</script>
 </body>
 </html>

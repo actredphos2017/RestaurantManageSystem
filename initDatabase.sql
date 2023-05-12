@@ -31,24 +31,13 @@ create table CustomerAccounts
 
 create table Orders
 (
-    ID              varchar(32) not null,
-    RestaurantID    varchar(16) not null,
-    CustomerMessage text        not null,
-    ValueSum        double      not null,
-    TableNo         int         not null,
-    OrderTime       datetime    not null,
-    primary key (ID),
+    ID           varchar(32) not null,
+    RestaurantID varchar(16) not null,
+    Money        double      not null,
+    OrderTime    datetime    not null,
+    Finish       boolean default false,
+    Detail       longtext    not null,
+    primary key (RestaurantID, ID),
     foreign key (RestaurantID) references Restaurants (ID)
-) engine = InnoDB,
-  charset = utf8;
-
-create table OrderDetails
-(
-    OrderID         varchar(32) not null,
-    BuyerID         varchar(16) default null,
-    DishesName      varchar(32) not null,
-    CustomerMessage text        not null,
-    DIYOptions      longtext    not null,
-    foreign key (OrderID) references Orders (ID)
 ) engine = InnoDB,
   charset = utf8;
